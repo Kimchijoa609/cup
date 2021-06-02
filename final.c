@@ -17,31 +17,37 @@ int insert(FILE *fp, FILE* fp2 ,int i ,char*buf){
 	return count;
 }
 
+int find_index(FILE* fp, FILE* fp2,char* buf){
+
+	for(int i=0;i < strlen(buf)-1;i++){
+		if(buf[i+1]==':')
+			return i;
+	}
+}
+
 
 void ReadnWrite(FILE * fp ,FILE * fp2){
 	char buf[MAX_SIZE];
 	int count ; // 길이 구하는 칭구
 	int start =0;	
 	int length =0; 
+	int index;
 	while(fgets(buf,sizeof(buf),fp)!=NULL){
 		count =0; //줄마다 검사 후 다시 초기화
 		
 
 		if(strncmp(buf,"ID:",3)==0){ // id 저장
- 			printf("ID 발견\n");
 			length=insert(fp,fp2,4,buf);
 			fprintf(fp2,"@%d/",length);
 			continue;
       }
 		if(strncmp(buf,"NAME:",5)==0){ // 이름 저장
-      printf("이름 발견\n");
 			length=insert(fp,fp2,6,buf);
       fprintf(fp2,"@%d/",length);
       continue;
       }
 
 		if(strncmp(buf,"GENDER:",7)==0){ // 성별 저장
-      printf("성별 발견\n");
 			if(buf[8]='F'){
 			 fprintf(fp2,"F/");
 			}else
@@ -50,32 +56,91 @@ void ReadnWrite(FILE * fp ,FILE * fp2){
     }
 
 		if(strncmp(buf,"AGE:",4)==0){ // 나이 저장
-			printf("나이 발견\n");
 			length=insert(fp,fp2,5,buf);
 			fprintf(fp2,"/");
 			continue;
 		}
 		if(strncmp(buf,"HP:",3)==0){ // HP 저장
-      printf("HP 발견\n");
 			insert(fp,fp2,4,buf);
 			fprintf(fp2,"/");
       continue;
     }
 
 		if(strncmp(buf,"MP:",3)==0){ // MP 저장
-			printf("MP 발견\n");
       insert(fp,fp2,4,buf);
       fprintf(fp2,"/");
       continue;
 		}
 		if(strncmp(buf,"COIN:",5)==0){ // COIN 저장
-      printf("COIN 발견\n");
       insert(fp,fp2,6,buf);
       fprintf(fp2,"/");
       continue;
      }
+		////////////////item/////////////////////
+
+
+		if(strncmp(buf,"BOMB:",5)==0){ // COIN 저장
+			fprintf(fp2,"BM");
+      insert(fp,fp2,6,buf);
+      fprintf(fp2,"/");
+        continue;
+		}else if(strncmp(buf,"POTION:",7)==0){ // POTION 저장
+      fprintf(fp2,"PN");
+      insert(fp,fp2,8,buf);
+      fprintf(fp2,"/");
+        continue;
+		}else if(strncmp(buf,"CURE:",5)==0){ // CURE 저장
+      fprintf(fp2,"CR");
+      insert(fp,fp2,6,buf);
+      fprintf(fp2,"/");
+        continue;
+    }else if(strncmp(buf,"CANNON:",7)==0){ // CANNON 저장
+      fprintf(fp2,"CN");
+      insert(fp,fp2,8,buf);
+      fprintf(fp2,"/");
+        continue;
+    }else if(strncmp(buf,"BOOK:",5)==0){ // BOOK 저장
+      fprintf(fp2,"BK");
+      insert(fp,fp2,6,buf);
+      fprintf(fp2,"/");
+        continue;
+    }else if(strncmp(buf,"SHIELD:",7)==0){ // SHIELD 저장
+      fprintf(fp2,"SD");
+      insert(fp,fp2,8,buf);
+      fprintf(fp2,"/");
+        continue;
+    }
+		/////////////////////FRIENDS////////////////////
+
+		if(strncmp(buf,"*FRIENDS LIST*",7)==0){ //
+      fprintf(fp2,"f");	
+			continue;
+    }if(strncmp(buf,"FRIEND",6)==0){  
+			index=find_index(fp,fp2,buf);
+			switch(index){
+				case 9: //id
+				case 11: //name
+				case 10: //age
+					insert(fp,fp2,index+3,buf);
+					fprintf(fp2,"/");
+					break;
+				case 13: //gender
+					if(buf[16]=='F'){
+						fprintf(fp2,"F/");
+						break;	
+					}else
+						fprintf(fp2,"M/");
+						break;
+			}
+			continue;
+    }
+
+
+
+
+		/////////////////////////////////////////
 		if(strncmp(buf,"*DESCRIPTION*",13)==0){ // 자기소개 저장
-			printf("같아요!\n");
+			fprintf(fp2,"f");
 			start++;
 			continue;
 		}
