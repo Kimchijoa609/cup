@@ -6,18 +6,15 @@
 #include <errno.h>
 #define MAX_SIZE 255
 
-int insert(FILE *fp, FILE* fp2 ,int i ,char*buf){
+void insert(FILE *fp, FILE* fp2 ,int i ,char*buf){ // fp2에 값 입력
 
-	int count=0;
 
 	for(int j=i; j<strlen(buf)-1;j++){
              fprintf(fp2,"%c",buf[j]);
-             count++;
            }
-	return count;
 }
 
-int find_index(FILE* fp, FILE* fp2,char* buf){
+int find_index(FILE* fp, FILE* fp2,char* buf){ // ':' 전까지의 i 값 반환 
 
 	for(int i=0;i < strlen(buf)-1;i++){
 		if(buf[i+1]==':')
@@ -28,23 +25,21 @@ int find_index(FILE* fp, FILE* fp2,char* buf){
 
 void ReadnWrite(FILE * fp ,FILE * fp2){
 	char buf[MAX_SIZE];
-	int count ; // 길이 구하는 칭구
-	int start =0;	
-	int length =0; 
+	int start =0;	 
 	int index;
-	while(fgets(buf,sizeof(buf),fp)!=NULL){
-		count =0; //줄마다 검사 후 다시 초기화
-		
+
+	while(fgets(buf,sizeof(buf),fp)!=NULL){  
+		//줄마다 읽고 항목을 strncmp 함수를 통해 검사 및 저장
 
 		if(strncmp(buf,"ID:",3)==0){ // id 저장
-			length=insert(fp,fp2,4,buf);
-			fprintf(fp2,"@%d/",length);
+			insert(fp,fp2,4,buf);
+			fprintf(fp2,"/");
 			continue;
       }
 		if(strncmp(buf,"NAME:",5)==0){ // 이름 저장
-			length=insert(fp,fp2,6,buf);
-      fprintf(fp2,"@%d/",length);
-      continue;
+			insert(fp,fp2,6,buf);
+      			fprintf(fp2,"/");
+      			continue;
       }
 
 		if(strncmp(buf,"GENDER:",7)==0){ // 성별 저장
@@ -52,11 +47,11 @@ void ReadnWrite(FILE * fp ,FILE * fp2){
 			 fprintf(fp2,"F/");
 			}else
 			 fprintf(fp2,"M/");
-      continue;
+		         continue;
     }
 
 		if(strncmp(buf,"AGE:",4)==0){ // 나이 저장
-			length=insert(fp,fp2,5,buf);
+			insert(fp,fp2,5,buf);
 			fprintf(fp2,"/");
 			continue;
 		}
@@ -76,48 +71,50 @@ void ReadnWrite(FILE * fp ,FILE * fp2){
       fprintf(fp2,"/");
       continue;
      }
-		////////////////item/////////////////////
+
+		/*-----------item-----------*/
 
 
 		if(strncmp(buf,"BOMB:",5)==0){ // COIN 저장
-			fprintf(fp2,"BM");
+			fprintf(fp2,"BM/");
       insert(fp,fp2,6,buf);
       fprintf(fp2,"/");
         continue;
 		}else if(strncmp(buf,"POTION:",7)==0){ // POTION 저장
-      fprintf(fp2,"PN");
+      fprintf(fp2,"PN/");
       insert(fp,fp2,8,buf);
       fprintf(fp2,"/");
         continue;
 		}else if(strncmp(buf,"CURE:",5)==0){ // CURE 저장
-      fprintf(fp2,"CR");
+      fprintf(fp2,"CR/");
       insert(fp,fp2,6,buf);
       fprintf(fp2,"/");
         continue;
     }else if(strncmp(buf,"CANNON:",7)==0){ // CANNON 저장
-      fprintf(fp2,"CN");
+      fprintf(fp2,"CN/");
       insert(fp,fp2,8,buf);
       fprintf(fp2,"/");
         continue;
     }else if(strncmp(buf,"BOOK:",5)==0){ // BOOK 저장
-      fprintf(fp2,"BK");
+      fprintf(fp2,"BK/");
       insert(fp,fp2,6,buf);
       fprintf(fp2,"/");
         continue;
     }else if(strncmp(buf,"SHIELD:",7)==0){ // SHIELD 저장
-      fprintf(fp2,"SD");
+      fprintf(fp2,"SD/");
       insert(fp,fp2,8,buf);
       fprintf(fp2,"/");
         continue;
     }
-		/////////////////////FRIENDS////////////////////
+
+	  /*--------friends list------*/
 
 		if(strncmp(buf,"*FRIENDS LIST*",7)==0){ //
-      fprintf(fp2,"f");	
+      fprintf(fp2,"@/");	
 			continue;
     }if(strncmp(buf,"FRIEND",6)==0){  
-			index=find_index(fp,fp2,buf);
-			switch(index){
+			index=find_index(fp,fp2,buf);   // find_index 함수를 통해 index 값 구하고switch문 실행 ex) friend1 id의 인덱스는 9
+			switch(index){ // gender 부분을 제외하고는 동일하게 처리
 				case 9: //id
 				case 11: //name
 				case 10: //age
@@ -137,24 +134,48 @@ void ReadnWrite(FILE * fp ,FILE * fp2){
 
 
 
+		/*-------description---------*/
 
-		/////////////////////////////////////////
-		if(strncmp(buf,"*DESCRIPTION*",13)==0){ // 자기소개 저장
-			fprintf(fp2,"f");
-			start++;
+		if(strncmp(buf,"*DESCRIPTION*",13)==0){ // 
+			fprintf(fp2,"@/");
+			start++; // *DESCRIPTION* 부분을 만나면 start 1 증가 
 			continue;
 		}
-		if(start>0){
+		if(start>0){ // *DESCRIPTION* 부분을 만난 후라면 반복문을 통해 저장
 		for(int k=0;k<strlen(buf)-1;k++){
 				fprintf(fp2,"%c",buf[k]);
-				count++;
 		}
-		fprintf(fp2,"@%d/",count);
+		fprintf(fp2,"/");
 		}
 	}
 	
 }
 
+void nonIntelligenceCopy(char* filename){
+	
+	// 파일을 끝까지 읽고 여섯 번 복사해서 저장
+
+	FILE* fp = fopen(filename,"r");
+	int i =0;
+	int len;
+	char buf[3000];
+	while(!feof(fp)){
+		buf[i] = fgetc(fp);
+		i++;
+	}
+	fclose(fp);
+
+	fopen(filename,"w");
+	len = strlen(buf);
+	for(int i = 0;i<6;i++)
+	{	
+		fwrite(buf,1,len-2,fp);	
+		fputc('\n',fp);
+	}
+	fclose(fp);
+
+	return;
+}
 
 int main(int argc, char* argv[]){
 
@@ -173,9 +194,11 @@ int main(int argc, char* argv[]){
    }
 
 	ReadnWrite(fp,fp2);
-
+	
 	fclose(fp);
 	fclose(fp2);
+	
+	nonIntelligenceCopy(argv[2]);
 
 	return 0;
 }
